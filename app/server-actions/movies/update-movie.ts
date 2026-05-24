@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
 import { z } from "zod";
 
 const movieUpdateSchema = z.object({
-  id: z.string().min(1, { message: "ID manquant." }),
+  id: z.string().min(1, { message: "ID missing." }),
   title: z.string().min(1, { message: "Title is required." }),
   original_title: z.string().nullable().optional(),
   description: z.string().min(1, { message: "Description is required." }),
@@ -31,7 +31,7 @@ const movieUpdateSchema = z.object({
       message: "Select at least one director minimum.",
     }),
 
-  country_id: z.string().min(1, { message: "Le pays est requis." }),
+  country_id: z.string().min(1, { message: "Country is required." }),
 
   genre_ids: z
     .string()

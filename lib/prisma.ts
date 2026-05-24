@@ -1,13 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 
+// Prevent creating multiple instances of PrismaClient in development
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
+// Instantiate a single PrismaClient instance
 export const prisma =
   globalForPrisma.prisma ||
   new PrismaClient({
-    // Configuration pour supporter l'Edge Runtime
-
     datasources: {
       db: {
         url: process.env.DATABASE_URL,
@@ -16,10 +16,9 @@ export const prisma =
     log: ["query", "info", "warn", "error"],
   });
 
-// Prevent multiple Prisma clients in development
+// In development, reuse the PrismaClient instance across hot reloads
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
-// Generic caching utility using unstable_cache
 export const cachedQuery = async <T>(
   key: string[],
   queryFn: () => Promise<T>,
@@ -30,13 +29,12 @@ export const cachedQuery = async <T>(
 ): Promise<T> => {
   const cachedFunction = unstable_cache(queryFn, key, {
     tags: options?.tags,
-    revalidate: options?.revalidate || 3600, // 1 hour default
+    revalidate: options?.revalidate || 3600,
   });
 
   return cachedFunction();
 };
 
-// Revalidation utility
 export const revalidateCache = async (tag: string) => {
   const { revalidateTag } = await import("next/cache");
   revalidateTag(tag);

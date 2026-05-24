@@ -22,7 +22,7 @@ export async function addMovie(formData: FormData) {
   if (!userIsAdmin) {
     return {
       type: "error",
-      message: "You must be admin to update a movie",
+      message: "You must be admin to add a movie",
       errors: null,
     };
   }
@@ -30,33 +30,31 @@ export async function addMovie(formData: FormData) {
   const schema = z.object({
     title: z
       .string()
-      .min(1, "Le titre est obligatoire")
-      .regex(/^[\s\S]*$/, "Le titre contient des caractères non valides"),
+      .min(1, "Title is required")
+      .regex(/^[\s\S]*$/, "Title contains invalid characters"),
     original_title: z
       .string()
-      .regex(/^[\s\S]*$/, "Le titre contient des caractères non valides")
+      .regex(/^[\s\S]*$/, "Title contains invalid characters")
       .optional(),
-    director_name: z
-      .string()
-      .min(1, "Le prénom du réalisateur est obligatoire"),
+    director_name: z.string().min(1, "Director is required"),
     description: z
       .string()
-      .min(5, "Le synopsis doit faire au moins 5 caractères"),
-    release_date: z.string().min(4, "L'année de sortie est obligatoire"),
-    runtime: z.number().min(4, "L'année de sortie est obligatoire"),
-    country_id: z.string().min(1, "Le pays est obligatoire"),
-    genre_id: z.string().min(1, "Le genre est obligatoire"),
-    type: z.string().min(1, "Le type est obligatoire"),
-    keyword_id: z.string().min(1, "Un mot-clé est obligatoire"),
+      .min(5, "Synopsis must be at least 5 characters long"),
+    release_date: z.string().min(4, "Release year is required"),
+    runtime: z.number().min(4, "Runtime is required"),
+    country_id: z.string().min(1, "Country is required"),
+    genre_id: z.string().min(1, "Genre is required"),
+    type: z.string().min(1, "Format is required"),
+    keyword_id: z.string().min(1, "At least one keyword is required"),
     image_url: z
       .any()
       .refine(
         (file) => file?.size <= MAX_FILE_SIZE,
-        `La taille maximum de l'image est 5MB`
+        `Maximum image size is 5MB`
       )
       .refine(
         (file) => ACCEPTED_IMAGE_TYPES.includes(file?.type),
-        `Seuls les formats .jpg, jpeg, png et webp sont acceptés`
+        `Only .jpg, .jpeg, .png, and .webp formats are allowed`
       ),
   });
 
@@ -79,7 +77,7 @@ export async function addMovie(formData: FormData) {
     return {
       type: "error",
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Veuillez remplir tous les champs obligatoires",
+      message: "Please fill in all required fields",
     };
   }
 
@@ -100,7 +98,6 @@ export async function addMovie(formData: FormData) {
   console.log(validatedFields.data);
 
   try {
-    // image upload
     const safeTitle = title
       .replace(/\s+/g, "-")
       .replace(/[^\w\-]/g, "")
@@ -117,16 +114,14 @@ export async function addMovie(formData: FormData) {
     if (imageError) {
       return {
         type: "error",
-        message:
-          "Erreur avec la base de données : Echec du téléchargement de l'image",
+        message: "Database error: Failed to upload the image",
       };
     }
 
     const result = await prisma.$transaction(async (prisma) => {
       // Upsert director
       const director = await prisma.directors.upsert({
-        where: { id: 0 }, // Placeholder
-        // where: { name: director_name }, // Only works if 'name' is defined as @unique in schema
+        where: { id: 0 },
         update: { name: director_name },
         create: { name: director_name },
       });
@@ -192,10 +187,9 @@ export async function addMovie(formData: FormData) {
     console.error("Error", error);
     return {
       type: "error",
-      message: "Erreur avec la base de données : Echec de l'ajout du film",
+      message: "Database error: Failed to add the movie",
     };
   }
-  // redirect
 
   revalidatePath("/");
   redirect("/");

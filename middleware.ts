@@ -45,8 +45,7 @@ export async function updateSession(request: NextRequest) {
       const existingUser = await prisma.users.findUnique({
         where: { id: user.id },
       });
-
-      // S'il n'existe pas, créez-le
+      // If doesn't exist, create the user
       if (!existingUser) {
         await prisma.users.create({
           data: {
@@ -58,12 +57,12 @@ export async function updateSession(request: NextRequest) {
         });
       }
     } catch (err) {
-      console.error("Erreur de synchronisation utilisateur:", err);
+      console.error("User synchronisation error:", err);
     }
   }
   if (
     !user &&
-    !request.nextUrl.pathname.startsWith("/") && // Allow home page
+    !request.nextUrl.pathname.startsWith("/") &&
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/signup") &&
     !request.nextUrl.pathname.startsWith("/auth")

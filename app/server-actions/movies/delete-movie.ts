@@ -15,7 +15,6 @@ export async function deleteMovie(movieId: string) {
     };
   }
   try {
-    // Vérifier si le film existe
     const movie = await prisma.movies.findUnique({
       where: { id: movieId },
     });
@@ -24,16 +23,13 @@ export async function deleteMovie(movieId: string) {
       return { success: false, message: "Movie doesn't exist" };
     }
 
-    // Supprimer les dépendances liées au film
     await prisma.movies_countries.deleteMany({ where: { movie_id: movieId } });
     await prisma.movies_directors.deleteMany({ where: { movie_id: movieId } });
     await prisma.movies_genres.deleteMany({ where: { movie_id: movieId } });
     await prisma.movies_keywords.deleteMany({ where: { movie_id: movieId } });
 
-    // Supprimer le film
     await prisma.movies.delete({ where: { id: movieId } });
 
-    // Rafraîchir la page
     revalidatePath("/");
 
     return { success: true, message: "Success to delete the movie" };

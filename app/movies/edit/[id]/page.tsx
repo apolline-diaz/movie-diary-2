@@ -18,9 +18,8 @@ export default async function EditMoviePage({
   const { movie, error } = await getMovie(params.id);
   const session = await auth();
 
-  // If no session exists, redirect to login page
   if (!session) {
-    redirect("/login"); // Adjust the login path as needed
+    redirect("/login");
   }
 
   if (error || !movie) {

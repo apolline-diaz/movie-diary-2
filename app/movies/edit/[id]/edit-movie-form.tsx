@@ -229,15 +229,12 @@ export default function EditMovieForm({ movie }: { movie: Movie }) {
     setError(null);
 
     try {
-      // Keep last iamge if any other has bee uploaded
       let imageUrl = data.image_url;
 
       if (imageFile && imageFile instanceof File) {
-        // If another image has been choosen, it uploads
-        imageUrl = await uploadImage(imageFile, data.title); // Upload image and get the URL
+        imageUrl = await uploadImage(imageFile, data.title);
       }
 
-      // Prepare FormData for sending to the API
       const formDataToUpdate = new FormData();
       formDataToUpdate.append("id", movie.id);
       formDataToUpdate.append("title", data.title);
@@ -247,11 +244,9 @@ export default function EditMovieForm({ movie }: { movie: Movie }) {
       formDataToUpdate.append("language", data.language ?? "");
       formDataToUpdate.append("type", data.type ?? "");
       formDataToUpdate.append("runtime", data.runtime?.toString() ?? "");
-      formDataToUpdate.append("image_url", imageUrl); // Utilise l'URL d'image après upload
+      formDataToUpdate.append("image_url", imageUrl);
 
-      // Add image if it exists
       if (data.image && data.image.length > 0) {
-        // data.image[0] correspond au premier fichier dans FileList
         formDataToUpdate.append("image", data.image[0]);
       }
 
@@ -260,14 +255,9 @@ export default function EditMovieForm({ movie }: { movie: Movie }) {
       formDataToUpdate.append("genre_ids", JSON.stringify(data.genres));
       formDataToUpdate.append("keyword_ids", JSON.stringify(data.keywords));
 
-      console.log("Sending FormData:", formDataToUpdate);
-
-      // Call the update function
       const { success, error } = await updateMovie(formDataToUpdate);
-      console.log("Response from updateMovie:", success, error);
 
       if (success) {
-        // Redirect to movie page after validate the form
         router.push(`/movies/${movie.id}`);
         router.refresh();
       } else {
